@@ -18,8 +18,11 @@ public class SpearScript : MonoBehaviour
     [Header("Dissolve VFX")]
     public GameObject dissolveVFX;
     public SpriteRenderer mainSpriteRenderer;
+    
     public float dissolveSpeed;
     public float dissolveHeight;
+    
+    public SpriteRenderer dissolveSpriteRenderer;
     
     private float groundY;
     private bool stuck = false;
@@ -36,6 +39,8 @@ public class SpearScript : MonoBehaviour
         //anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
         mainSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        
+        dissolveSpriteRenderer = transform.Find("SpearVanish").GetComponentInChildren<SpriteRenderer>();
     }
     
     public void StartFalling(float destinyY)
@@ -47,7 +52,9 @@ public class SpearScript : MonoBehaviour
     {
         if(flashCoroutine != null) StopCoroutine(flashCoroutine);
         flashCoroutine = StartCoroutine(FlashEffect());
-        StartCoroutine(VanishRoutine());
+        
+        if(vanishCoroutine != null) StopCoroutine(vanishCoroutine);
+        vanishCoroutine = StartCoroutine(VanishRoutine());
     }
 
     IEnumerator FlashEffect()
@@ -96,14 +103,15 @@ public class SpearScript : MonoBehaviour
     {
         Debug.Log("Stucked!");
         Debug.Log("Main Sprite Alpha: " +  mainSpriteRenderer.color.a);
-        StartCoroutine(VanishRoutine());
+        
+        vanishCoroutine = StartCoroutine(VanishRoutine());
     }
 
     IEnumerator VanishRoutine()
     {
         yield return new WaitForSeconds(disapearTime);
         
-        //Spear alpha
+        /*Spear alpha
         Color cM = mainSpriteRenderer.color;
         cM.a = 1f;
         mainSpriteRenderer.color = cM;
@@ -117,9 +125,26 @@ public class SpearScript : MonoBehaviour
         
         cM.a = 0;
         mainSpriteRenderer.color = cM;
+        */
+        
+        //Above bright FX
+        Color dColor = dissolveSpriteRenderer.color;
+        dColor.a = 0f;
+        
+        dissolveSpriteRenderer.color = dColor;
+
+        while (dColor.a < 1f)
+        {
+            dColor.a += Time.deltaTime * dissolveSpeed;
+            dissolveSpriteRenderer.color = dColor;
+            yield return null;
+        }
+        
+        dColor.a = 1f;
+        dissolveSpriteRenderer.color = dColor;
         //
 
-        // Dissolve Effect
+        // Dissolve VFX
         if (dissolveVFX != null)
         {
             Instantiate(dissolveVFX, new Vector2(transform.position.x, transform.position.y + dissolveHeight), Quaternion.identity);
