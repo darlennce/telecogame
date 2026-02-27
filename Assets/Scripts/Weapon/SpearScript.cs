@@ -13,7 +13,13 @@ public class SpearScript : MonoBehaviour
     
     [Header("Bright VFX Configs")]
     public SpriteRenderer brightOverlay;
-    public float fadeVelocity; 
+    public float fadeVelocity;
+    
+    [Header("Dissolve VFX")]
+    public GameObject dissolveVFX;
+    public SpriteRenderer mainSpriteRenderer;
+    public float dissolveSpeed;
+    public float dissolveHeight;
     
     private float groundY;
     private bool stuck = false;
@@ -21,11 +27,15 @@ public class SpearScript : MonoBehaviour
     private Animator anim;
     
     private BoxCollider2D boxCollider;
+    
+    private Coroutine flashCoroutine;
+    private Coroutine vanishCoroutine;
 
     void Awake()
     {
         //anim = GetComponent<Animator>();
-        boxCollider = GetComponent<BoxCollider2D>(); 
+        boxCollider = GetComponent<BoxCollider2D>();
+        mainSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
     
     public void StartFalling(float destinyY)
@@ -35,12 +45,14 @@ public class SpearScript : MonoBehaviour
 
     public void SuckEnergy()
     {
-        StopAllCoroutines();
-        StartCoroutine(FlashEffect());
+        if(flashCoroutine != null) StopCoroutine(flashCoroutine);
+        flashCoroutine = StartCoroutine(FlashEffect());
+        StartCoroutine(VanishRoutine());
     }
 
     IEnumerator FlashEffect()
     {
+        // Bright Effect on Spear
         if (brightOverlay != null)
         {
             Color c = brightOverlay.color;
@@ -70,21 +82,54 @@ public class SpearScript : MonoBehaviour
         {
             transform.position = new Vector3(transform.position.x, groundY, transform.position.z);
             stuck = true;
-            StuckOnGround();
 
-            if (!impactVFX != null)
+            if (impactVFX != null)
             {
                 Instantiate(impactVFX, new Vector3(transform.position.x, vfxHeight, transform.position.z), Quaternion.identity);
             }
+            
+            StuckOnGround();
         }
     }
 
     void StuckOnGround()
     {
         Debug.Log("Stucked!");
-        
-        Destroy(gameObject, disapearTime);
+        Debug.Log("Main Sprite Alpha: " +  mainSpriteRenderer.color.a);
+        StartCoroutine(VanishRoutine());
     }
+
+    IEnumerator VanishRoutine()
+    {
+        yield return new WaitForSeconds(disapearTime);
+        
+        //Spear alpha
+        Color cM = mainSpriteRenderer.color;
+        cM.a = 1f;
+        mainSpriteRenderer.color = cM;
+        
+        while (cM.a > 0)
+        {
+            cM.a -= Time.deltaTime * dissolveSpeed;
+            mainSpriteRenderer.color = cM;
+            yield return null;
+        }
+        
+        cM.a = 0;
+        mainSpriteRenderer.color = cM;
+        //
+
+        // Dissolve Effect
+        if (dissolveVFX != null)
+        {
+            Instantiate(dissolveVFX, new Vector2(transform.position.x, transform.position.y + dissolveHeight), Quaternion.identity);
+        }
+        
+        yield return new WaitForSeconds(0.1f);
+        
+        Destroy(gameObject);
+    }
+    
 }
 
 

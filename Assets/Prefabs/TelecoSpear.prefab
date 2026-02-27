@@ -139,11 +139,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpearScript
   fallingSpeed: 50
-  disapearTime: 3.5
+  disapearTime: 2
   impactVFX: {fileID: 5121016833885694229, guid: 1bcdf1d7a07e58d4d984661376dc5fcd, type: 3}
   vfxHeight: -1.449
   brightOverlay: {fileID: 3133538888398901676}
   fadeVelocity: 1
+  dissolveVFX: {fileID: 741947918400796004, guid: 6901a5e5aa75d0248bdb4ea79c10e9c2, type: 3}
+  mainSpriteRenderer: {fileID: 7333490274785776576}
+  dissolveSpeed: 5
+  dissolveHeight: 0.7
+  whiteMaterial: {fileID: 2100000, guid: fd9a4422ed520214e91e3ee227c219e3, type: 2}
 --- !u!61 &2746347194566568928
 BoxCollider2D:
   m_ObjectHideFlags: 0
